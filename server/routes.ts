@@ -9,14 +9,15 @@ import mongoose from "mongoose";
 
 export async function registerRoutes(
   httpServer: Server,
-  app: Express
+  app: Express,
 ): Promise<Server> {
   await connectDB();
 
   app.patch("/api/inquiries/:id", async (req, res) => {
     try {
       const inquiry = await storage.updateInquiry(req.params.id, req.body);
-      if (!inquiry) return res.status(404).json({ message: "Inquiry not found" });
+      if (!inquiry)
+        return res.status(404).json({ message: "Inquiry not found" });
       res.json(inquiry);
     } catch (error) {
       res.status(400).json({ message: "Invalid input" });
@@ -34,7 +35,7 @@ export async function registerRoutes(
         secure: process.env.NODE_ENV === "production",
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       },
-    })
+    }),
   );
 
   // Auth Routes
@@ -95,7 +96,9 @@ export async function registerRoutes(
       res.json(data);
     } catch (error: any) {
       console.error("Error fetching dashboard data:", error);
-      res.status(500).json({ message: error.message || "Internal server error" });
+      res
+        .status(500)
+        .json({ message: error.message || "Internal server error" });
     }
   });
 
@@ -106,7 +109,9 @@ export async function registerRoutes(
       res.json(customers);
     } catch (error: any) {
       console.error("Error fetching customers:", error);
-      res.status(500).json({ message: error.message || "Internal server error" });
+      res
+        .status(500)
+        .json({ message: error.message || "Internal server error" });
     }
   });
 
@@ -129,7 +134,8 @@ export async function registerRoutes(
   app.patch("/api/masters/services/:id", async (req, res) => {
     try {
       const service = await storage.updateService(req.params.id, req.body);
-      if (!service) return res.status(404).json({ message: "Service not found" });
+      if (!service)
+        return res.status(404).json({ message: "Service not found" });
       res.json(service);
     } catch (error) {
       res.status(400).json({ message: "Invalid input" });
@@ -193,7 +199,9 @@ export async function registerRoutes(
 
   app.post(api.masters.accessories.categories.create.path, async (req, res) => {
     try {
-      const { name } = api.masters.accessories.categories.create.input.parse(req.body);
+      const { name } = api.masters.accessories.categories.create.input.parse(
+        req.body,
+      );
       const category = await storage.createAccessoryCategory(name);
       res.status(201).json(category);
     } catch (error) {
@@ -203,8 +211,12 @@ export async function registerRoutes(
 
   app.patch("/api/masters/accessory-categories/:id", async (req, res) => {
     try {
-      const category = await storage.updateAccessoryCategory(req.params.id, req.body.name);
-      if (!category) return res.status(404).json({ message: "Category not found" });
+      const category = await storage.updateAccessoryCategory(
+        req.params.id,
+        req.body.name,
+      );
+      if (!category)
+        return res.status(404).json({ message: "Category not found" });
       res.json(category);
     } catch (error) {
       res.status(400).json({ message: "Invalid input" });
@@ -213,14 +225,16 @@ export async function registerRoutes(
 
   app.delete("/api/masters/accessory-categories/:id", async (req, res) => {
     const success = await storage.deleteAccessoryCategory(req.params.id);
-    if (!success) return res.status(404).json({ message: "Category not found" });
+    if (!success)
+      return res.status(404).json({ message: "Category not found" });
     res.json({ message: "Category deleted" });
   });
 
   app.patch("/api/masters/accessories/:id", async (req, res) => {
     try {
       const accessory = await storage.updateAccessory(req.params.id, req.body);
-      if (!accessory) return res.status(404).json({ message: "Accessory not found" });
+      if (!accessory)
+        return res.status(404).json({ message: "Accessory not found" });
       res.json(accessory);
     } catch (error) {
       res.status(400).json({ message: "Invalid input" });
@@ -229,7 +243,8 @@ export async function registerRoutes(
 
   app.delete("/api/masters/accessories/:id", async (req, res) => {
     const success = await storage.deleteAccessory(req.params.id);
-    if (!success) return res.status(404).json({ message: "Accessory not found" });
+    if (!success)
+      return res.status(404).json({ message: "Accessory not found" });
     res.json({ message: "Accessory deleted" });
   });
 
@@ -266,8 +281,12 @@ export async function registerRoutes(
 
   app.patch("/api/technicians/:id", async (req, res) => {
     try {
-      const technician = await storage.updateTechnician(req.params.id, req.body);
-      if (!technician) return res.status(404).json({ message: "Technician not found" });
+      const technician = await storage.updateTechnician(
+        req.params.id,
+        req.body,
+      );
+      if (!technician)
+        return res.status(404).json({ message: "Technician not found" });
       res.json(technician);
     } catch (error) {
       res.status(400).json({ message: "Invalid input" });
@@ -276,7 +295,8 @@ export async function registerRoutes(
 
   app.delete("/api/technicians/:id", async (req, res) => {
     const success = await storage.deleteTechnician(req.params.id);
-    if (!success) return res.status(404).json({ message: "Technician not found" });
+    if (!success)
+      return res.status(404).json({ message: "Technician not found" });
     res.json({ message: "Technician deleted" });
   });
 
@@ -298,8 +318,12 @@ export async function registerRoutes(
 
   app.patch("/api/appointments/:id", async (req, res) => {
     try {
-      const appointment = await storage.updateAppointment(req.params.id, req.body);
-      if (!appointment) return res.status(404).json({ message: "Appointment not found" });
+      const appointment = await storage.updateAppointment(
+        req.params.id,
+        req.body,
+      );
+      if (!appointment)
+        return res.status(404).json({ message: "Appointment not found" });
       res.json(appointment);
     } catch (error) {
       res.status(400).json({ message: "Invalid input" });
@@ -308,7 +332,8 @@ export async function registerRoutes(
 
   app.delete("/api/appointments/:id", async (req, res) => {
     const success = await storage.deleteAppointment(req.params.id);
-    if (!success) return res.status(404).json({ message: "Appointment not found" });
+    if (!success)
+      return res.status(404).json({ message: "Appointment not found" });
     res.json({ message: "Appointment deleted" });
   });
 
@@ -378,7 +403,8 @@ export async function registerRoutes(
     }
     try {
       const invoice = await storage.updateInvoice(req.params.id, req.body);
-      if (!invoice) return res.status(404).json({ message: "Invoice not found" });
+      if (!invoice)
+        return res.status(404).json({ message: "Invoice not found" });
       res.json(invoice);
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Invalid input" });
@@ -402,7 +428,9 @@ export async function registerRoutes(
   app.post("/api/debug/reset-balances", async (req, res) => {
     if (!(req.session as any).userId) return res.sendStatus(401);
     try {
-      await mongoose.model("Invoice").updateMany({}, { $set: { payments: [], isPaid: false } });
+      await mongoose
+        .model("Invoice")
+        .updateMany({}, { $set: { payments: [], isPaid: false } });
       res.json({ message: "All balances reset to zero (payments cleared)" });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -423,7 +451,8 @@ export async function registerRoutes(
 
   app.delete("/api/job-cards/:id", async (req, res) => {
     const success = await storage.deleteJobCard(req.params.id);
-    if (!success) return res.status(404).json({ message: "Job card not found" });
+    if (!success)
+      return res.status(404).json({ message: "Job card not found" });
     res.json({ message: "Job card deleted" });
   });
 
@@ -455,12 +484,12 @@ export async function registerRoutes(
 
   // Seed default user if not exists
   if (mongoose.connection.readyState === 1) {
-    const defaultEmail = "Autogarage@system.com";
+    const defaultEmail = "abhishek@autogamma.in";
     const existing = await storage.getUserByEmail(defaultEmail);
     if (!existing) {
       await storage.createUser({
         email: defaultEmail,
-        password: "password123", // Matches the dummy login in screenshot roughly
+        password: "Abhishek@132231", // Matches the dummy login in screenshot roughly
       });
       console.log("Seeded default user:", defaultEmail);
     }
