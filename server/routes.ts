@@ -6,12 +6,15 @@ import { z } from "zod";
 import session from "express-session";
 import { connectDB } from "./db";
 import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express,
 ): Promise<Server> {
   await connectDB();
+
+  app.use(cookieParser());
 
   app.patch("/api/inquiries/:id", async (req, res) => {
     try {
@@ -26,6 +29,11 @@ export async function registerRoutes(
 
   // Session middleware
   app.set("trust proxy", 1);
+  app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} [express] ${req.method} ${req.url}`);
+    next();
+  });
+
   app.use(
     session({
       secret: process.env.SESSION_SECRET || "default_secret",
@@ -35,13 +43,24 @@ export async function registerRoutes(
       name: "sid",
       proxy: true,
       cookie: {
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        httpOnly: true,
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      },
-    }),
-  );
+      secure: false, 
+      sameSite: "lax",
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    },
+    rolling: true,
+    resave: true,
+    saveUninitialized: true,
+  }),
+);
+
+// Clear logs for production once fixed
+app.use((req, res, next) => {
+  if (req.url.startsWith("/api/")) {
+    console.log(`${new Date().toISOString()} [API] ${req.method} ${req.url} - sid: ${req.cookies?.sid ? "exists" : "missing"} - user: ${(req.session as any)?.userId || "none"}`);
+  }
+  next();
+});
 
   // Auth Routes
   app.post(api.auth.login.path, async (req, res) => {
