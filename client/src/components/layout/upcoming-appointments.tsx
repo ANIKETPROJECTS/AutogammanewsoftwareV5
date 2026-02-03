@@ -34,20 +34,21 @@ export function UpcomingAppointments() {
 
   const upcoming = useMemo(() => {
     const now = new Date();
-    const sevenDaysLater = addDays(now, 7);
+    const twoDaysLater = addDays(now, 2);
     
     return appointments
       .filter((a) => {
         if (a.status !== "SCHEDULED") return false;
         const apptDate = new Date(a.date);
-        return isAfter(apptDate, startOfDay(now)) && isBefore(apptDate, sevenDaysLater);
+        return isAfter(apptDate, startOfDay(now)) && isBefore(apptDate, startOfDay(addDays(twoDaysLater, 1)));
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [appointments]);
 
   const closeCount = useMemo(() => {
-    const tomorrow = addDays(new Date(), 1);
-    return upcoming.filter(a => isBefore(new Date(a.date), tomorrow)).length;
+    const today = startOfDay(new Date());
+    const tomorrowEnd = startOfDay(addDays(today, 2));
+    return upcoming.filter(a => isBefore(new Date(a.date), tomorrowEnd)).length;
   }, [upcoming]);
 
   return (
@@ -78,7 +79,7 @@ export function UpcomingAppointments() {
           <div className="max-h-[400px] overflow-y-auto">
             {upcoming.length === 0 ? (
               <div className="p-8 text-center">
-                <p className="text-sm text-muted-foreground">No appointments in the next 7 days</p>
+                <p className="text-sm text-muted-foreground">No appointments in the next 2 days</p>
               </div>
             ) : (
               upcoming.map((appt) => {

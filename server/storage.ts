@@ -364,10 +364,17 @@ export class MongoStorage implements IStorage {
       return acc + (balance > 0 ? balance : 0);
     }, 0);
 
+    const twoDaysLater = new Date();
+    twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+    twoDaysLater.setHours(23, 59, 59, 999);
+
     const upcomingAppointments = await AppointmentModel.find({
       status: "SCHEDULED",
-      date: { $gte: new Date().toISOString().split('T')[0] }
-    }).sort({ date: 1, time: 1 }).limit(5);
+      date: { 
+        $gte: new Date().toISOString().split('T')[0],
+        $lte: twoDaysLater.toISOString().split('T')[0]
+      }
+    }).sort({ date: 1, time: 1 }).limit(10);
 
     return {
       stats: [
