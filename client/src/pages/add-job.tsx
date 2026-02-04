@@ -367,6 +367,16 @@ export default function AddJobPage() {
       return;
     }
 
+    // Check if roll has enough quantity
+    if (roll && rollQty > roll.stock) {
+      toast({
+        title: "Insufficient Stock",
+        description: `Selected roll only has ${roll.stock} sqft remaining.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const vehiclePricing = p?.pricingByVehicleType.find(v => v.vehicleType === vehicleType);
     const option = vehiclePricing?.options.find(o => o.warrantyName === selectedWarranty);
     
@@ -375,6 +385,7 @@ export default function AddJobPage() {
         ppfId: p.id!, 
         name: `${p.name} (${vehicleType} - ${selectedWarranty})`,
         rollId: selectedPPFRoll,
+        rollName: roll?.name || "Unknown Roll",
         rollUsed: rollQty > 0 ? rollQty : undefined,
         price: option?.price || 0,
         technician: tech?.name,
