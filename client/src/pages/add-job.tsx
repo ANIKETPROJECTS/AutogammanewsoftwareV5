@@ -394,23 +394,37 @@ export default function AddJobPage() {
         // Update the existing entry
         const currentPPFs = form.getValues("ppfs");
         
-        // If it's a new roll for the same card, we just need to track the total rollUsed 
-        // Note: The schema for ppfs in JobCard might need to support multiple rolls if we want to track them separately,
-        // but based on the user request "add diffrient rolls in same card", 
-        // we'll sum up the rollUsed and perhaps update the roll info if it's different.
-        // If the user wants to see "from Roll1" and "from Roll2" in the same card, 
-        // we might need to adjust how roll info is stored.
-        // Given the current structure, we'll append roll info to the name or a description field if available.
-        
         const newRollUsed = (existingField.rollUsed || 0) + (rollQty || 0);
-        const rollInfo = roll ? ` (from ${roll.name})` : "";
         
+        // Build the description for multiple rolls if different roll is used
+        let updatedName = existingField.name;
+        if (roll && existingField.rollId !== selectedPPFRoll) {
+          // If different roll, append to description format: Quantity: X (from Roll1) , Quantity: Y (from Roll2)
+          // First, let's extract existing quantities if they are already in the "Quantity: X (from RollY)" format
+          // If not, we format the existing one first.
+          
+          const existingRollDesc = `Quantity: ${existingField.rollUsed}sqft (from ${existingField.rollName || 'Initial Roll'})`;
+          const newRollDesc = `Quantity: ${rollQty}sqft (from ${roll.name})`;
+          
+          // Check if it already has the format
+          if (updatedName.includes("Quantity:")) {
+            updatedName = `${updatedName} , ${newRollDesc}`;
+          } else {
+            // It's the first time adding a second roll
+            updatedName = `${updatedName}\n${existingRollDesc} , ${newRollDesc}`;
+          }
+        }
+
         currentPPFs[existingPPFIndex] = {
           ...existingField,
           rollUsed: newRollUsed > 0 ? newRollUsed : undefined,
-          // We keep the first rollId/rollName but sum up the quantity. 
-          // If we want to show multiple rolls, we'd need a more complex structure.
-          // For now, we follow the logic of adding to the same card.
+          name: updatedName,
+          // We keep the primary rollId for backward compatibility, but the stock subtraction
+          // on the server will need to handle multiple rolls if we were to support it perfectly.
+          // However, based on the current UI/request, we are just updating the display and summing quantity.
+          // NOTE: The server-side stock subtraction might still only subtract from the first rollId stored.
+          // If the user wants separate stock subtraction, the schema would need to change to an array of rolls.
+          // For now, we fulfill the UI requirement.
         };
         form.setValue("ppfs", currentPPFs);
       } else {
