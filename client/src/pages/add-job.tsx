@@ -381,16 +381,37 @@ export default function AddJobPage() {
     const option = vehiclePricing?.options.find(o => o.warrantyName === selectedWarranty);
     
     if (p && selectedWarranty) {
-      appendPPF({ 
-        ppfId: p.id!, 
-        name: `${p.name} (${vehicleType} - ${selectedWarranty})`,
-        rollId: selectedPPFRoll,
-        rollName: roll?.name || "Unknown Roll",
-        rollUsed: rollQty > 0 ? rollQty : undefined,
-        price: option?.price || 0,
-        technician: tech?.name,
-        warranty: selectedWarranty
-      } as any);
+      const existingPPFIndex = ppfFields.findIndex(
+        (field: any) =>
+          field.ppfId === p.id &&
+          field.warranty === selectedWarranty &&
+          field.rollId === selectedPPFRoll &&
+          field.technician === tech?.name
+      );
+
+      if (existingPPFIndex !== -1) {
+        const existingField = ppfFields[existingPPFIndex];
+        const newRollUsed = (existingField.rollUsed || 0) + (rollQty || 0);
+        
+        // Update the existing entry
+        const currentPPFs = form.getValues("ppfs");
+        currentPPFs[existingPPFIndex] = {
+          ...existingField,
+          rollUsed: newRollUsed > 0 ? newRollUsed : undefined,
+        };
+        form.setValue("ppfs", currentPPFs);
+      } else {
+        appendPPF({ 
+          ppfId: p.id!, 
+          name: `${p.name} (${vehicleType} - ${selectedWarranty})`,
+          rollId: selectedPPFRoll,
+          rollName: roll?.name || "Unknown Roll",
+          rollUsed: rollQty > 0 ? rollQty : undefined,
+          price: option?.price || 0,
+          technician: tech?.name,
+          warranty: selectedWarranty
+        } as any);
+      }
       setSelectedPPF("");
       setSelectedPPFRoll("");
       setSelectedWarranty("");
